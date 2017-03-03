@@ -26,10 +26,27 @@ object List {
     case Cons(_, xs) => if (n == 0) l else drop(xs, n - 1)
   }
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
-    case Nil => Nil
-    case Cons(x, xs) => if (f(x)) dropWhile(xs, f) else l
+  def dropWhile[A](l: List[A])(f: A => Boolean): List[A] = l match {
+    case Cons(x, xs) if f(x) => dropWhile(xs)(f)
+    case _ => l
   }
+
+  def init[A](l: List[A]): List[A] = l match {
+    case Nil => Nil
+    case Cons(x, Nil) => Nil
+    case Cons(x, xs) => Cons(x, init(xs))
+  }
+
+  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
+    case Nil => z
+    case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+  }
+
+  def sum2(ns: List[Int]) = foldRight(ns, 0)(_ + _)
+
+  def product2(ns: List[Double]) = foldRight(ns, 1.0)(_ * _)
+
+  def length[A](l: List[A]): Int = foldRight(l, 0)((_, acc) => acc + 1)
 
   def apply[A](as: A*): List[A] =
     if (as.isEmpty) Nil
