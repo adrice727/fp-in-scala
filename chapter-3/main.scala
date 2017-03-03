@@ -14,14 +14,16 @@ object List {
     case Cons(x, xs) => x * product(xs)
   }
 
-  def setHead[A](a: List[A], b: A): List[A] = a match {
-    case Nil => List(b)
-    case Cons(_, xs) => Cons(b, xs)
+  def setHead[A](l: List[A], a: A): List[A] = l match {
+    case Nil => List(a)
+    case Cons(_, xs) => Cons(a, xs)
   }
 
-  def tail[A](a: List[A]): List[A] = a match {
+  def tail[A](l: List[A]): List[A] = drop(l, 1)
+
+  def drop[A](l: List[A], n: Int): List[A] = l match {
     case Nil => Nil
-    case Cons(x, xs) => xs
+    case Cons(_, xs) => if (n == 0) l else drop(xs, n - 1)
   }
 
   def apply[A](as: A*): List[A] =
