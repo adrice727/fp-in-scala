@@ -55,13 +55,20 @@ object List {
     case Nil => z
     case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
   }
-
   def sum3(ns: List[Int]) = foldLeft(ns, 0)(_ + _)
 
   def product3(ns: List[Double]) = foldLeft(ns, 1.0)(_ * _)
 
   def length2[A](l: List[A]): Int = foldLeft(l, 0)((acc, _) => acc + 1)
-  
+
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, List[A]())((acc, a) => Cons(a, acc))
+
+  def foldRight2[A, B](l: List[A], z: B)(f: (A, B) => B): B = {
+    foldLeft(l, (b: B) => b)((acc, a) => b => acc(f(a, b)))(z)
+  }
+  def foldLeft2[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
+    foldRight(l, (b: B) => b)((a, acc) => b => acc(f(b, a)))(z)
+  }
   def apply[A](as: A*): List[A] =
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
