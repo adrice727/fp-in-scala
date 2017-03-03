@@ -23,6 +23,7 @@ object List {
 
   def tail[A](l: List[A]): List[A] = drop(l, 1)
 
+  @tailrec
   def drop[A](l: List[A], n: Int): List[A] = l match {
     case Nil => Nil
     case Cons(_, xs) => if (n == 0) l else drop(xs, n - 1)
@@ -38,7 +39,7 @@ object List {
     case Cons(x, Nil) => Nil
     case Cons(x, xs) => Cons(x, init(xs))
   }
-
+  
   def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
     case Nil => z
     case Cons(x, xs) => f(x, foldRight(xs, z)(f))
@@ -55,6 +56,7 @@ object List {
     case Nil => z
     case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
   }
+
   def sum3(ns: List[Int]) = foldLeft(ns, 0)(_ + _)
 
   def product3(ns: List[Double]) = foldLeft(ns, 1.0)(_ * _)
@@ -69,6 +71,14 @@ object List {
   def foldLeft2[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
     foldRight(l, (b: B) => b)((a, acc) => b => acc(f(b, a)))(z)
   }
+
+  def append[A](l1: List[A], l2: List[A]): List[A] = foldRight(l1, l2)(Cons(_, _))
+
+  def concat[A](ls: List[A]*): List[A] = {
+    if (ls.isEmpty) Nil
+    else append(ls.head, concat(ls.tail: _*))
+  }
+
   def apply[A](as: A*): List[A] =
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
