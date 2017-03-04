@@ -115,18 +115,47 @@ object List {
   }
 
   // Using stack-safe foldRight
-  def map2[A, B](s: List[A])(f: A => B): List[B] = {
-    foldRight2(l, List[A())((a, acc) => Cons(f(a), acc))
+  def map2[A, B](l: List[A])(f: A => B): List[B] = {
+    foldRight2(l, List[B]())((a, acc) => Cons(f(a), acc))
   }
 
-  def map3[A,B](l: List[A])(f: A => B): List[B] = {
+  // Using a List Buffer
+  def map3[A, B](l: List[A])(f: A => B): List[B] = {
     val buf = new collection.mutable.ListBuffer[B]
     def buildBuffer(l: List[A]): Unit = l match {
       case Nil => ()
-      case Cons(x,xs) => buf += f(x); go(xs)
+      case Cons(x, xs) => buf += f(x); buildBuffer(xs)
     }
     buildBuffer(l)
     List(buf.toList: _*) // converting from the standard Scala list to the list we've defined here
+  }
+
+  // Using stack-safe foldRight
+  def filter[A](l: List[A])(f: A => Boolean): List[A] = {
+    foldRight2(l, List[A]())((a, acc) => if (f(a)) Cons(a, acc) else acc)
+  }
+
+  def removeOdds(ints: List[Int]): List[Int] = filter(ints)(_ % 2 == 0)
+
+  def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] = {
+    concat(map(l)(f))
+  }
+
+  // Using flatMap
+  def filter2[A](l: List[A])(f: A => Boolean): List[A] = {
+    flatMap(l)(i => if (f(i)) Cons(i, Nil) else Nil)
+  }
+
+  def sumPairs(ints1: List[Int], ints2: List[Int]): List[Int] = (ints1, ints2) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(x1 + x2, sumPairs(xs1, xs2))
+  }
+
+  def zipWith[A,B,C](l1: List[A], l2: List[B])(f: (A,B) => C): List[C] = (l1, l2) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(f(x1, x2), zipWith(xs1, xs2)(f))
   }
 
   def apply[A](as: A*): List[A] =
