@@ -39,7 +39,7 @@ object List {
     case Cons(x, Nil) => Nil
     case Cons(x, xs) => Cons(x, init(xs))
   }
-  
+
   def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
     case Nil => z
     case Cons(x, xs) => f(x, foldRight(xs, z)(f))
@@ -65,18 +65,68 @@ object List {
 
   def reverse[A](l: List[A]): List[A] = foldLeft(l, List[A]())((acc, a) => Cons(a, acc))
 
+  // Using foldLeft
   def foldRight2[A, B](l: List[A], z: B)(f: (A, B) => B): B = {
     foldLeft(l, (b: B) => b)((acc, a) => b => acc(f(a, b)))(z)
   }
+
+  // Using foldRight
   def foldLeft2[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
     foldRight(l, (b: B) => b)((a, acc) => b => acc(f(b, a)))(z)
   }
 
   def append[A](l1: List[A], l2: List[A]): List[A] = foldRight(l1, l2)(Cons(_, _))
 
-  def concat[A](ls: List[A]*): List[A] = {
-    if (ls.isEmpty) Nil
-    else append(ls.head, concat(ls.tail: _*))
+  // Take a list of lists
+  def concat[A](l: List[List[A]]): List[A] = foldRight(l, List[A]())(append)
+
+  // Variadic version
+  def concat2[A](l: List[A]*): List[A] = {
+    if (l.isEmpty) Nil
+    else append(l.head, concat2(l.tail: _*))
+  }
+
+  // Add one to each value in the list
+  def addOne(ints: List[Int]): List[Int] = ints match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(x + 1, addOne(xs))
+  }
+
+  // Using fold
+  def addOne2(ints: List[Int]): List[Int] = {
+    foldRight(ints, List[Int]())((a, acc) => Cons(a + 1, acc))
+  }
+
+  // Convert a list of doubles to a list of strings
+  def doublesToStrings(dbs: List[Double]): List[String] = dbs match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(x.toString, doublesToStrings(xs))
+  }
+
+  // Using fold
+  def doublesToStrings2(dbs: List[Double]): List[String] = {
+    foldRight(dbs, List[String]())((a, acc) => Cons(a.toString, acc))
+  }
+
+  // Using pattern matching
+  def map[A, B](l: List[A])(f: A => B): List[B] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(f(x), map(xs)(f))
+  }
+
+  // Using stack-safe foldRight
+  def map2[A, B](s: List[A])(f: A => B): List[B] = {
+    foldRight2(l, List[A())((a, acc) => Cons(f(a), acc))
+  }
+
+  def map3[A,B](l: List[A])(f: A => B): List[B] = {
+    val buf = new collection.mutable.ListBuffer[B]
+    def buildBuffer(l: List[A]): Unit = l match {
+      case Nil => ()
+      case Cons(x,xs) => buf += f(x); go(xs)
+    }
+    buildBuffer(l)
+    List(buf.toList: _*) // converting from the standard Scala list to the list we've defined here
   }
 
   def apply[A](as: A*): List[A] =
