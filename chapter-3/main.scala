@@ -152,10 +152,24 @@ object List {
     case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(x1 + x2, sumPairs(xs1, xs2))
   }
 
-  def zipWith[A,B,C](l1: List[A], l2: List[B])(f: (A,B) => C): List[C] = (l1, l2) match {
+  def zipWith[A, B, C](l1: List[A], l2: List[B])(f: (A, B) => C): List[C] = (l1, l2) match {
     case (Nil, _) => Nil
     case (_, Nil) => Nil
     case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(f(x1, x2), zipWith(xs1, xs2)(f))
+  }
+  
+  @tailrec
+  def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match {
+    case(_, Nil) => true
+    case(Cons(lx, lxs), Cons(px, pxs)) if lx == px => startsWith(lxs, pxs)
+    case _ => false
+  }
+
+  @tailrec
+  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = l match {
+    case Nil => sub == Nil
+    case _ if startsWith(l, sub) => true
+    case Cons(_, xs) => hasSubsequence(xs, sub)
   }
 
   def apply[A](as: A*): List[A] =
