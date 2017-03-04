@@ -157,11 +157,11 @@ object List {
     case (_, Nil) => Nil
     case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(f(x1, x2), zipWith(xs1, xs2)(f))
   }
-  
+
   @tailrec
   def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match {
-    case(_, Nil) => true
-    case(Cons(lx, lxs), Cons(px, pxs)) if lx == px => startsWith(lxs, pxs)
+    case (_, Nil) => true
+    case (Cons(lx, lxs), Cons(px, pxs)) if lx == px => startsWith(lxs, pxs)
     case _ => false
   }
 
