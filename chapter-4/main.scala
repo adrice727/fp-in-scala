@@ -44,6 +44,14 @@ object Main {
       case Nil => Some(Nil)
       case x :: xs => x flatMap (xx => sequence2(xs) map (xx :: _))
     }
+
+    def traverse[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] =  {
+      a.foldRight[Option[List[B]]](Some(Nil))((aa, acc) => map2(f(aa), acc)(_ :: _))
+    }
+
+    def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] = {
+      traverse(a)(x => x)
+    }
   }
 
 }
