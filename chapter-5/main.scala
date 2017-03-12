@@ -53,11 +53,19 @@ sealed trait Stream[+A] {
 
   def forAll(f: A => Boolean): Boolean = this.foldRight(true)((a, acc) => f(a) && acc)
 
-  def takeWhile2(f: A => Boolean) : Stream[A] = {
+  def takeWhile2(f: A => Boolean): Stream[A] = {
     this.foldRight(empty[A])((a, acc) => if (f(a)) cons(a, acc) else acc)
   }
 
   def headOption2: Option[A] = foldRight(None: Option[A])((a, acc) => Some(a))
+
+  def map[B](f: A => B): Stream[B] = foldRight(empty[B])((a, acc) => cons(f(a), acc))
+
+  def filter(f: A => Boolean): Stream[A] = foldRight(empty[A])((a, acc) => if (f(a)) cons(a, acc) else acc)
+
+  def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)(cons(_, _))
+
+  def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B])((a, acc) => f(a) append acc)
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -70,6 +78,25 @@ object Stream {
   }
 
   def empty[A]: Stream[A] = Empty
+
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+
+  def fibs(a: Int = 0, b: Int = 1): Stream[Int] = cons(a, fibs(b, a + b))
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case Some((a, s)) => cons(a, unfold(s)(f))
+    case None => empty
+  }
+
+  def onesWithUnfold: Stream[Int] = unfold(1)(_ => Some(1, 1))
+
+  def constantWithUnfold[A](a: A): Stream[A] = unfold(a)(_ => Some(a, a))
+
+  def fromWithUnfold(n: Int): Stream[Int] = unfold(n)(_ => Some(n, n + 1))
+
+  def fibsWithUnfold: Stream[Int] = unfold((0, 1)) { case (a, b) => Some((a, (b, a + b))) }
 
   def apply[A](as: A*): Stream[A] = {
     if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
