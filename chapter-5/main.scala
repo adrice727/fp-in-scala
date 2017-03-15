@@ -66,7 +66,7 @@ sealed trait Stream[+A] {
   def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)(cons(_, _))
 
   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B])((a, acc) => f(a) append acc)
-  
+
   def mapWithUnfold[B](f: A => B): Stream[B] =
     unfold(this) {
       case Cons(h, t) => Some(f(h()), t())
@@ -108,13 +108,39 @@ sealed trait Stream[+A] {
     */
   def startsWith[A](s: Stream[A]): Boolean = {
     zipAll(s).takeWhile(!_._2.isEmpty) forAll {
-      case (h1,h2) => h1 == h2
+      case (h1, h2) => h1 == h2
     }
   }
 
+  //  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+  //    case Some((a, s)) => cons(a, unfold(s)(f))
+  //    case None => empty
+  //  }
+
   def tails: Stream[Stream[A]] = {
-    ???
+    unfold(this) {
+      case Empty => None
+      case s => Some(s, s drop 1)
+    }
   }
+
+  def hasSubsequence[A](s: Stream[A]): Boolean = {
+    tails.exists(_ startsWith s)
+  }
+
+  def mapTails[B](f: A => B): Stream[Stream[B]] = {
+    unfold(this) {
+      case Empty => None
+      case s => Some(s map f, s drop 1)
+    }
+  }
+
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((z, Stream(z)))((a, acc) => {
+      lazy val acc1 = acc
+      val a2 = f(a, acc1._1)
+      (a2, cons(a2, acc1._2))
+    })._2
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
